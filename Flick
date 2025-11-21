@@ -18,14 +18,15 @@ _G.HitboxSize = 50
 _G.Hitbox = v
 game:GetService("RunService").RenderStepped:Connect(function()
 if _G.Hitbox then
-for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+for _, otherPlayer in pairs(game.Players:GetChildren()) do
+if otherPlayer ~= game.Players.LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
 otherPlayer.Character.HumanoidRootPart.Size = Vector3.new(_G.HitboxSize,_G.HitboxSize,_G.HitboxSize)
+otherPlayer.Character.HumanoidRootPart.CanCollide = false
 end
 end
 else
-for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+for _, otherPlayer in pairs(game.Players:GetChildren()) do
+if otherPlayer ~= game.Players.LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
 otherPlayer.Character.HumanoidRootPart.Size = Vector3.new(1,2,1)
 end
 end
@@ -115,7 +116,28 @@ fovCircle.Color = Color3.fromRGB(255, 255, 255)
 fovCircle.Visible = fovCircleEnabled
 fovCircle.Filled = false
 fovCircle.Transparency = 1
-
+Section:AddSlider("Speed", 1, 25, 20, {toggleable = true, default = false, flag = "ws_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v, v2)
+_G.WS = v or 20
+_G.WSE = v2
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.WSE then
+game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
+end
+end)
+end)
+local l = game.Lighting
+Section:AddToggle("Fullbright", {flag = "fb_flag", default = false}, function(v)
+_G.Fullbright = v
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.Fullbright then
+l.GlobalShadows = false
+l.OutdoorAmbient = Color3.new(1,1,1)
+else
+l.GlobalShadows = true
+l.OutdoorAmbient = Color3.new(0,0,0)
+end
+end)
+end)
 Section:AddToggle("Aimbot", {flag = "aimbot_flag", default = false}, function(v)
 aimbotEnabled = v
 end)
@@ -125,6 +147,22 @@ fovCircle.Visible = v
 end)
 Section:AddToggle("Teamcheck", {flag = "teamcheck_flag", default = false}, function(v)
 teamCheck = v
+end)
+Section:AddToggle("Players ESP", {flag = "esp_flag", default = false}, function(v)
+_G.PlayersESP = v
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.PlayersESP then
+for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+if otherPlayer ~= game.Players.LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+if not otherPlayer.Character:FindFirstChild("Highlight_Cheat") then
+local h = Instance.new("Highlight", otherPlayer.Character)
+h.FillTransparency = 0.75
+h.Name = "Highlight_Cheat"
+end
+end
+end
+end
+end)
 end)
 Section:AddSlider("Fov Size", 50, 500, 150, {toggleable = false, default = false, flag = "fov_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v)
 fovSize = v
@@ -156,19 +194,6 @@ RunService.RenderStepped:Connect(function()
 		end
 	end
 end)
-Section:AddToggle("Players ESP", {flag = "Esp_flag", default = false}, function(v)
-_G.PlayersESP = v
-game:GetService("RunService").RenderStepped:Connect(function()
-if _G.PlayersESP then
-for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-if not otherPlayer.Character:FindFirstChild("h") then
-local h = Instance.new("Highlight", otherPlayer.Character)
-end
-end
-end
-end)
-end)
 
 
 
@@ -176,53 +201,5 @@ end)
 
 
 
---[[
 
-local Button = Section:AddButton("Button", function()
-	print("Button has been pressed")
-end)
 
--- Create Toggle
-local Toggle = Section:AddToggle("Toggle", {flag = "Toggle_Flag", default = false}, function(bool)
-	print("Toggle set to:", bool)
-end)
-
--- Create Label
-local Label = Section:AddLabel("Label")
-
--- Create DualLabel
-local DualLabel = Section:AddDualLabel({"Dual", "Label"})
-
--- Create ClipboardLabel
-local ClipboardLabel = Section:AddClipboardLabel("ClipboardLabel", function()
-	return "ClipboardLabel"
-end)
-
--- Create Box
-local Box = Section:AddBox("Box", {fireonempty = true}, function(text)
-	print(text)
-end)
-
--- Create Bind
-local Bind = Section:AddBind("Bind", Enum.KeyCode.RightShift, {toggleable = true, default = false, flag = "Bind_Flag"}, function(keycode)
-	Window:SetKey(keycode)
-end)
-
--- Create Slider
-local Slider = Section:AddSlider("Slider", 1, 100, 50, {toggleable = true, default = false, flag = "Slider_Flag", fireontoggle = true, fireondrag = true, rounded = true}, function(val, bool)
-	print("Slider value:", val, " - Slider toggled:", bool)
-end)
-
--- Create Dropdown
-local Dropdown = Section:AddDropdown("Dropdown", {"Item1", "Item2", "Item3"}, {default = "Item1"}, function(selected)
-	print(selected)
-end)
-
--- Create Picker
-local Picker = Section:AddPicker("Picker", {color = Color3.fromRGB(255, 0, 0)}, function(color)
-	Window:SetAccent(color)
-end)
-]]--
-local Tab2 = Window:AddTab("Setting", {default = false})
-
-Tab2:AddConfigs()
