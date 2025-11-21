@@ -1,0 +1,228 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/UserR16/DandyWorld/refs/heads/main/Source"))()
+
+-- Create Window
+local Window = Library:AddWindow({
+	title = {"YOUHUB", "Flick"},
+	theme = {
+		Accent = Color3.fromRGB(0, 255, 0)
+	},
+	key = Enum.KeyCode.RightControl,
+	default = true
+})
+
+local Main = Window:AddTab("Main", {default = true})
+
+local Section = Main:AddSection("Main", {default = true})
+Section:AddSlider("Hitbox", 1, 50, 50, {toggleable = true, default = false, flag = "hitbox_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v, v2)
+_G.HitboxSize = 50
+_G.Hitbox = v
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.Hitbox then
+for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+otherPlayer.Character.HumanoidRootPart.Size = Vector3.new(_G.HitboxSize,_G.HitboxSize,_G.HitboxSize)
+end
+end
+else
+for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+otherPlayer.Character.HumanoidRootPart.Size = Vector3.new(1,2,1)
+end
+end
+end
+end)
+end)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+local aimbotEnabled = false
+local aimSmoothing = 0.15
+local fovCircleEnabled = true
+local fovSize = 150
+local espEnabled = true
+local targetPart = "Head"
+local teamCheck = false
+
+local function isPlayerVisible(player)
+	local myChar = LocalPlayer.Character
+	if not myChar then return false end
+	
+	local targetPartObj = player.Character:FindFirstChild(targetPart)
+	if not targetPartObj then return false end
+	
+	local ray = Ray.new(Camera.CFrame.Position, (targetPartObj.Position - Camera.CFrame.Position).Unit * 1000)
+	local hit, position = Workspace:FindPartOnRayWithIgnoreList(ray, {myChar, Camera})
+	
+	if hit then
+		local hitPlayer = Players:GetPlayerFromCharacter(hit.Parent)
+		if hitPlayer and hitPlayer == player then
+			return true
+		end
+	end
+	
+	return false
+end
+
+local function getClosestPlayerInFOV()
+	if not aimbotEnabled or not fovCircleEnabled then return nil end
+	
+	local myChar = LocalPlayer.Character
+	if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
+	
+	local viewport = Camera.ViewportSize
+	local centerScreen = Vector2.new(viewport.X / 2, viewport.Y / 2)
+	
+	local nearest, shortestDist = nil, math.huge
+	
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			-- Team check
+			if teamCheck and player.Team == LocalPlayer.Team then
+				continue
+			end
+			
+			local targetPartObj = player.Character:FindFirstChild(targetPart)
+			if targetPartObj then
+				local screenPos, onScreen = Camera:WorldToViewportPoint(targetPartObj.Position)
+				
+				if onScreen and screenPos.Z > 0 then
+					local screenPos2D = Vector2.new(screenPos.X, screenPos.Y)
+					local distFromCenter = (screenPos2D - centerScreen).Magnitude
+					
+					if distFromCenter <= fovSize and distFromCenter < shortestDist then
+						-- Check if player is visible (not behind wall)
+						if isPlayerVisible(player) then
+							shortestDist = distFromCenter
+							nearest = player
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	return nearest
+end
+local fovCircle = Drawing.new("Circle")
+fovCircle.Thickness = 2
+fovCircle.NumSides = 50
+fovCircle.Radius = fovSize
+fovCircle.Color = Color3.fromRGB(255, 255, 255)
+fovCircle.Visible = fovCircleEnabled
+fovCircle.Filled = false
+fovCircle.Transparency = 1
+
+Section:AddToggle("Aimbot", {flag = "aimbot_flag", default = false}, function(v)
+aimbotEnabled = v
+end)
+Section:AddToggle("Show Aimbot Circle", {flag = "aimbotcircle_flag", default = false}, function(v)
+fovCircleEnabled = v
+fovCircle.Visible = v
+end)
+Section:AddToggle("Teamcheck", {flag = "teamcheck_flag", default = false}, function(v)
+teamCheck = v
+end)
+Section:AddSlider("Fov Size", 50, 500, 150, {toggleable = false, default = false, flag = "fov_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v)
+fovSize = v
+fovCircle.Radius = v
+end)
+Section:AddDropdown("Target Aimbot", {"Head", "HumanoidRootPart"}, {default = "Head"}, function(v)
+targetPart = v
+end)
+RunService.RenderStepped:Connect(function()
+	-- Update FOV Circle Position
+	local viewport = Camera.ViewportSize
+	fovCircle.Position = Vector2.new(viewport.X / 2, viewport.Y / 2)
+	
+	-- Update ESP colors for all players
+	
+	-- Aimbot Logic
+	if aimbotEnabled then
+		local target = getClosestPlayerInFOV()
+		if target and target.Character then
+			local targetPartObj = target.Character:FindFirstChild(targetPart)
+			if targetPartObj then
+				local targetPos = targetPartObj.Position
+				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+					local currentCF = Camera.CFrame
+					local targetCF = CFrame.new(currentCF.Position, targetPos)
+					Camera.CFrame = currentCF:Lerp(targetCF, aimSmoothing)
+				end
+			end
+		end
+	end
+end)
+Section:AddToggle("Players ESP", {flag = "Esp_flag", default = false}, function(v)
+_G.PlayersESP = v
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.PlayersESP then
+for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+if not otherPlayer.Character:FindFirstChild("h") then
+local h = Instance.new("Highlight", otherPlayer.Character)
+end
+end
+end
+end)
+end)
+
+
+
+
+
+
+
+--[[
+
+local Button = Section:AddButton("Button", function()
+	print("Button has been pressed")
+end)
+
+-- Create Toggle
+local Toggle = Section:AddToggle("Toggle", {flag = "Toggle_Flag", default = false}, function(bool)
+	print("Toggle set to:", bool)
+end)
+
+-- Create Label
+local Label = Section:AddLabel("Label")
+
+-- Create DualLabel
+local DualLabel = Section:AddDualLabel({"Dual", "Label"})
+
+-- Create ClipboardLabel
+local ClipboardLabel = Section:AddClipboardLabel("ClipboardLabel", function()
+	return "ClipboardLabel"
+end)
+
+-- Create Box
+local Box = Section:AddBox("Box", {fireonempty = true}, function(text)
+	print(text)
+end)
+
+-- Create Bind
+local Bind = Section:AddBind("Bind", Enum.KeyCode.RightShift, {toggleable = true, default = false, flag = "Bind_Flag"}, function(keycode)
+	Window:SetKey(keycode)
+end)
+
+-- Create Slider
+local Slider = Section:AddSlider("Slider", 1, 100, 50, {toggleable = true, default = false, flag = "Slider_Flag", fireontoggle = true, fireondrag = true, rounded = true}, function(val, bool)
+	print("Slider value:", val, " - Slider toggled:", bool)
+end)
+
+-- Create Dropdown
+local Dropdown = Section:AddDropdown("Dropdown", {"Item1", "Item2", "Item3"}, {default = "Item1"}, function(selected)
+	print(selected)
+end)
+
+-- Create Picker
+local Picker = Section:AddPicker("Picker", {color = Color3.fromRGB(255, 0, 0)}, function(color)
+	Window:SetAccent(color)
+end)
+]]--
+local Tab2 = Window:AddTab("Setting", {default = false})
+
+Tab2:AddConfigs()
