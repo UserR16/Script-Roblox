@@ -120,7 +120,7 @@ Section:AddSlider("Speed", 1, 25, 20, {toggleable = true, default = false, flag 
 _G.WS = v or 20
 _G.WSE = v2
 game:GetService("RunService").RenderStepped:Connect(function()
-if _G.WSE then
+if _G.WSE and game.Players.LocalPlayer:WaitForChild("Character") then
 game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
 end
 end)
