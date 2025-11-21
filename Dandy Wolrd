@@ -10,54 +10,81 @@ local Window = Library:AddWindow({
 	default = true
 })
 
-local Main = {
+local Tab = {
 Main = Window:AddTab("Main", {default = true}),
 Players = Window:AddTab("Players", {default = false}),
 ESP = Window:AddTab("ESP", {default = false})
 }
 
-local Main = Main:AddSection("Main", {default = true})
-
-local function AutoSkillCheck()
-    local ScreenGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("ScreenGui")
-    if not ScreenGui then
-        return
-    end
-
-    local Menu = ScreenGui:FindFirstChild("Menu")
-    if not Menu then
-        return
-    end
-
-    local SkillCheckFrame = Menu:FindFirstChild("SkillCheckFrame")
-    if not SkillCheckFrame then
-        return
-    end
-
-    SkillCheckFrame:GetPropertyChangedSignal("Visible"):Connect(
-        function()
-            if SkillCheckFrame.Visible then
-                local Marker = SkillCheckFrame:FindFirstChild("Marker")
-                local GoldArea = SkillCheckFrame:FindFirstChild("GoldArea")
-
-                if Marker and GoldArea then
-                    while _G.AutoSkillCheck and SkillCheckFrame.Visible do
-                        local MarkerPos = Marker.AbsolutePosition
-                        local GoldAreaPos = GoldArea.AbsolutePosition
-                        local GoldAreaSize = GoldArea.AbsoluteSize
-
-                        if MarkerPos.X >= GoldAreaPos.X and MarkerPos.X <= (GoldAreaPos.X + GoldAreaSize.X) then
-                            game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-                            game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Space, false, game)
-                            break
-                        end
-                        task.wait(0.01)
-                    end
-                end
-           end
-     end)
-end
+local Main = Tab.Main:AddSection("Main", {default = true})
 
 Main:AddToggle("Auto SkillCheck", {flag = "ASC_flag", default = false}, function(v)
-_G.AutoSkillCheck = v
+if v then
+local ScreenGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("ScreenGui")
+if not ScreenGui then
+return
+end
+local Menu = ScreenGui:FindFirstChild("Menu")
+if not Menu then
+return
+end
+local SkillCheckFrame = Menu:FindFirstChild("SkillCheckFrame")
+if not SkillCheckFrame then
+return
+end
+SkillCheck = SkillCheckFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+if SkillCheckFrame.Visible then
+local Marker = SkillCheckFrame:FindFirstChild("Marker")
+local GoldArea = SkillCheckFrame:FindFirstChild("GoldArea")
+if Marker and GoldArea then
+task.spawn(function()
+while SkillCheckFrame.Visible do
+local MarkerPos = Marker.AbsolutePosition
+local GoldAreaPos = GoldArea.AbsolutePosition
+local GoldAreaSize = GoldArea.AbsoluteSize
+if MarkerPos.X >= GoldAreaPos.X and MarkerPos.X <= (GoldAreaPos.X + GoldAreaSize.X) then
+game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+break
+end
+task.wait(0.01)
+end
+end)
+end
+end
+end)
+else
+SkillCheck:Disconnect()
+end
+end)
+Main:AddToggle("Auto Return to Elevator", {flag = "ARTE_flag", default = false}, function(v)
+_G.AutoReturnToElevator = v
+game:GetService("RunService").Stepped:Connect(function()
+if _G.AutoReturnToElevator then
+if workspace.Elevators.Elevator.Opened == true then
+if workspace.InGamePlayers:FindFirstChild(game.Players.LocalPlayer.Name) then
+workspace.InGamePlayers:FindFirstChild(game.Players.LocalPlayer.Name).HumanoidRootPart.CFrame = workspace.Elevators.Elevator.Base.CFrame
+end
+end
+end
+end)
+end)
+local Lighting = {
+GS = game.Lighting.GlobalShadows,
+BN = game.Lighting.Brightness,
+OA = game.Lighting.OutdoorAmbient
+}
+Main:AddToggle("Fullbright", {flag = "FB_flag", default = false}, function(v)
+_G.Fullbright = v
+game:GetService("RunService").Stepped:Connect(function()
+if _G.Fullbright then
+game.Lighting.GlobalShadows = false
+game.Lighting.Brightness = 3
+game.Lighting.OutdoorAmbient = Color3.new(1,1,1)
+else
+game.Lighting.GlobalShadows = Lighting.GS
+game.Lighting.Brightness = Lighting.BN
+game.Lighting.OutdoorAmbient = Lighting.OA
+end
+end)
 end)
