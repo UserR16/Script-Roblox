@@ -63,7 +63,7 @@ game:GetService("RunService").Stepped:Connect(function()
 if _G.AutoReturnToElevator then
 if workspace.Elevators.Elevator.Opened == true then
 if workspace.InGamePlayers:FindFirstChild(game.Players.LocalPlayer.Name) then
-workspace.InGamePlayers:FindFirstChild(game.Players.LocalPlayer.Name).HumanoidRootPart.CFrame = workspace.Elevators.Elevator.Base.CFrame
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.Elevators.Elevator["Base"].CFrame
 end
 end
 end
