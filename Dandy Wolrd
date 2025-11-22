@@ -20,6 +20,7 @@ local Main = Tab.Main:AddSection("Main", {default = true})
 
 Main:AddToggle("Auto SkillCheck", {flag = "ASC_flag", default = false}, function(v)
 if v then
+SkillCheck = game:GetService("RunService").RenderStepped:Connect(function()
 local ScreenGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("ScreenGui")
 if not ScreenGui then
 return
@@ -32,7 +33,7 @@ local SkillCheckFrame = Menu:FindFirstChild("SkillCheckFrame")
 if not SkillCheckFrame then
 return
 end
-SkillCheck = SkillCheckFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+SkillCheckFrame:GetPropertyChangedSignal("Visible"):Connect(function()
 if SkillCheckFrame.Visible then
 local Marker = SkillCheckFrame:FindFirstChild("Marker")
 local GoldArea = SkillCheckFrame:FindFirstChild("GoldArea")
@@ -53,13 +54,14 @@ end)
 end
 end
 end)
+end)
 else
 SkillCheck:Disconnect()
 end
 end)
 Main:AddToggle("Auto Return to Elevator", {flag = "ARTE_flag", default = false}, function(v)
 _G.AutoReturnToElevator = v
-game:GetService("RunService").Stepped:Connect(function()
+game:GetService("RunService").RenderStepped:Connect(function()
 if _G.AutoReturnToElevator then
 if workspace.Elevators.Elevator.Opened == true then
 if workspace.InGamePlayers:FindFirstChild(game.Players.LocalPlayer.Name) then
@@ -87,4 +89,128 @@ game.Lighting.Brightness = Lighting.BN
 game.Lighting.OutdoorAmbient = Lighting.OA
 end
 end)
+end)
+Main:AddToggle("Auto Items Aura", {flag = "AIA_flag", default = false}, function(v)
+_G.AutoItemsAura = v
+game:GetService("RunService").Stepped:Connect(function()
+if _G.AutoItemsAura and workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
+for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
+if v.Parent.Name = "CurrentRoom" and v.Name == "Items" then
+for _,v2 in ipairs(v:GetChildren()) do
+if v2.Parent.Name == "Items" then
+fireproximityprompt(v2.Prompt.ProximityPrompt)
+end
+end
+end
+end
+end
+end)
+end)
+
+local Players = Tab.Players:AddSection("Players", {default = true})
+Players:AddSlider("Speed", 1, 30, 25, {toggleable = true, default = false, flag = "ws_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v, v2)
+_G.WS = v or 25
+_G.WSE = v2
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.WSE and game.Players.LocalPlayer:WaitForChild("Character") then
+game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
+end
+end)
+end)
+Players:AddSlider("Field Of View", 70, 120, 90, {toggleable = true, default = false, flag = "ws_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v, v2)
+_G.FOV = v or 90
+_G.FOVE = v2
+game:GetService("RunService").RenderStepped:Connect(function()
+if _G.FOVE then
+workspace.Camera.FieldOfView = _G.FOV
+end
+end)
+end)
+
+local ESP = Tab.ESP:AddSection("ESP", {default = true})
+ESP:AddToggle("Players ESP", {flag = "PE_flag", default = false}, function(v)
+if v then
+PlayersESP = game:GetService("RunService").RenderStepped:Connect(function()
+for _, otherPlayer in ipairs(workspace.InGamePlayers:GetChildren()) do
+if otherPlayer ~= game.Players.LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+if not otherPlayer.Character:FindFirstChild("Players_ESP") then
+local h = Instance.new("Highlight", otherPlayer.Character)
+h.FillTransparency = 1
+h.Name = "Players_ESP"
+end
+end
+end
+end)
+else
+PlayersESP:Disconnect()
+end
+end)
+ESP:AddToggle("Items ESP", {flag = "IE_flag", default = false}, function(v)
+if v then
+ItemsESP = game:GetService("RunService").RenderStepped:Connect(function()
+if workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
+for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
+if v.Parent.Name = "CurrentRoom" and v.Name == "Items" then
+for _,v2 in ipairs(v:GetChildren()) do
+if v2.Parent.Name == "Items" then
+if not v2:FindFirstChild("Items_ESP") then
+local h = Instance.new("Highlight", v2)
+h.FillTransparency = 1
+h.Name = "Items_ESP"
+h.OutlineColor = Color3.new(0,1)
+end
+end
+end
+end
+end
+end)
+else
+ItemsESP:Disconnect()
+end
+end)
+ESP:AddToggle("Generators ESP", {flag = "GE_flag", default = false}, function(v)
+if v then
+GenESP = game:GetService("RunService").RenderStepped:Connect(function()
+if workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
+for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
+if v.Parent.Name = "CurrentRoom" and v.Name == "Generators" then
+for _,v2 in ipairs(v:GetChildren()) do
+if v2.Parent.Name == "Generators" then
+if not v2:FindFirstChild("Gens_ESP") then
+local h = Instance.new("Highlight", v2)
+h.FillTransparency = 1
+h.Name = "Gens_ESP"
+h.OutlineColor = Color3.new(1,0,1)
+end
+end
+end
+end
+end
+end)
+else
+GenESP:Disconnect()
+end
+end)
+ESP:AddToggle("Monsters ESP", {flag = "ME_flag", default = false}, function(v)
+if v then
+MonsESP = game:GetService("RunService").RenderStepped:Connect(function()
+if workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
+for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
+if v.Parent.Name = "CurrentRoom" and v.Name == "Monsters" then
+for _,v2 in ipairs(v:GetChildren()) do
+if v2.Parent.Name == "Monsters" then
+if not v2:FindFirstChild("Mons_ESP") then
+local h = Instance.new("Highlight", v2)
+h.FillTransparency = 1
+h.Name = "Mons_ESP"
+h.OutlineColor = Color3.new(1)
+end
+end
+end
+end
+end
+end)
+else
+MonsESP:Disconnect()
+end
 end)
