@@ -164,25 +164,7 @@ workspace.Camera.FieldOfView = _G.FOV
 end
 end)
 end)
-Players:AddToggle("Noclip", {flag = "NC_flag", default = false}, function(v)
-if v then
-        noclipConnection = game:GetService("RunService").Stepped:Connect(function()
-            local player = game.Players.LocalPlayer
-            if player and player.Character then
-                for _, part in pairs(player.Character:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-    else
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-    end
-end)
+
 local ESP = Tab.ESP:AddSection("ESP", {default = true})
 ESP:AddToggle("Players ESP", {flag = "PE_flag", default = false}, function(v)
 if v then
