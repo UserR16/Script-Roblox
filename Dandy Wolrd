@@ -36,6 +36,9 @@ end
 if SkillCheckFrame:FindFirstChild("GoldArea") then
 SkillCheckFrame:FindFirstChild("GoldArea").Size = UDim2.new(0,1000,0,1000)
 SkillCheckFrame:FindFirstChild("GoldArea").Transparency = 1
+SkillCheckFrame:FindFirstChild("Marker").Position = SkillCheckFrame:FindFirstChild("GoldArea").Position
+game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Space, false, game)
 end
 end)
 else
@@ -129,14 +132,21 @@ end
 end)
 
 local Players = Tab.Players:AddSection("Players", {default = true})
-Players:AddSlider("Speed", 1, 30, 25, {toggleable = true, default = false, flag = "ws_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v, v2)
-_G.WS = v or 25
-_G.WSE = v2
-game:GetService("RunService").RenderStepped:Connect(function()
-if _G.WSE and game:GetService("Players").LocalPlayer:WaitForChild("Character") then
-game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = _G.WS
-end
-end)
+Players:AddSlider("Speed", 0, 5, 1, {toggleable = true, default = false, flag = "ws_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v, v2)
+_G.TPWalkSpeed = v or 1
+_G.TPWalk = v2
+game:GetService("RunService").Heartbeat:Connect(function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local hrp = character.HumanoidRootPart
+            local moveDirection = character.Humanoid.MoveDirection
+
+            if _G.TPWalk and moveDirection.Magnitude > 0 then
+                hrp.CFrame = hrp.CFrame + (moveDirection * _G.TPWalkSpeed * 0.5)
+            end
+        end
+    end)
 end)
 Players:AddSlider("Field Of View", 70, 120, 90, {toggleable = true, default = false, flag = "ws_flag", fireontoggle = true, fireondrag = true, rounded = true}, function(v, v2)
 _G.FOV = v or 90
@@ -147,7 +157,7 @@ workspace.Camera.FieldOfView = _G.FOV
 end
 end)
 end)
-ESP:AddToggle("Noclip", {flag = "NC_flag", default = false}, function(v)
+Players:AddToggle("Noclip", {flag = "NC_flag", default = false}, function(v)
 if v then
         noclipConnection = game:GetService("RunService").Stepped:Connect(function()
             local player = game.Players.LocalPlayer
