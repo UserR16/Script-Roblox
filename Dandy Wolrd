@@ -17,6 +17,13 @@ Players = Window:AddTab("Players", {default = false}),
 ESP = Window:AddTab("ESP", {default = false})
 }
 
+for _,v in ipairs(game.ReplicatedStorage:GetDescendants()) do
+if v.Name == "AntiCheatTrigger" then
+v:Destroy()
+elseif v.Name == "WarnUser" then
+v:Destroy()
+end
+end
 local Main = Tab.Main:AddSection("Main", {default = true})
 Main:AddToggle("Auto SkillChecks", {flag = "ASC_flag", default = false}, function(v)
 if v then
