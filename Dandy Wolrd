@@ -1,4 +1,5 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/UserR16/DandyWorld/refs/heads/main/Source"))()
+local LibraryESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/RGV-devid/Scripts/refs/heads/main/ESP"))()
 
 -- Create Window
 local Window = Library:AddWindow({
@@ -95,12 +96,8 @@ _G.AutoItemsAura = v
 game:GetService("RunService").Stepped:Connect(function()
 if _G.AutoItemsAura and workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
 for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
-if v.Parent.Name = "CurrentRoom" and v.Name == "Items" then
-for _,v2 in ipairs(v:GetChildren()) do
-if v2.Parent.Name == "Items" then
-fireproximityprompt(v2.Prompt.ProximityPrompt)
-end
-end
+if v.Parent.Name == "CurrentRoom" and v:FindFirstChild("Items") and v.Parent and v and (v:FindFirstChild("Items"):FindFirstChildWhichIsA("Model").Prompt.Position - workspace.InGamePlayers:FindFirstChild(game.Players.LocalPlayer.Name).HumanoidRootPart.Position).Magnitude < 20 then
+fireproximityprompt(v:FindFirstChild("Items"):FindFirstChildWhichIsA("Model").Prompt.ProximityPrompt)
 end
 end
 end
@@ -130,87 +127,89 @@ end)
 local ESP = Tab.ESP:AddSection("ESP", {default = true})
 ESP:AddToggle("Players ESP", {flag = "PE_flag", default = false}, function(v)
 if v then
-PlayersESP = game:GetService("RunService").RenderStepped:Connect(function()
-for _, otherPlayer in ipairs(workspace.InGamePlayers:GetChildren()) do
-if otherPlayer ~= game.Players.LocalPlayer and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-if not otherPlayer.Character:FindFirstChild("Players_ESP") then
-local h = Instance.new("Highlight", otherPlayer.Character)
-h.FillTransparency = 1
-h.Name = "Players_ESP"
+for _,v in ipairs(workspace.InGamePlayers:GetDescendants()) do
+if v.Parent.Name == "InGamePlayers" and v then
+if not v:FindFirstChild("Players_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1,1,1), 15, "Players_ESP")
 end
+end
+end
+PlayersESP = workspace.InGamePlayers.DescendantAdded:Connect(function(v)
+if v.Parent.Name == "InGamePlayers" and v then
+if not v:FindFirstChild("Players_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1,1,1), 15, "Players_ESP")
 end
 end
 end)
 else
 PlayersESP:Disconnect()
+LibraryESP:Delete("Players_ESP")
 end
 end)
+
+ESP:AddToggle("Generators ESP", {flag = "GE_flag", default = false}, function(v)
+if v then
+for _,v in ipairs(workspace.CurrentRoom:GetDescendants()) do
+if v.Parent.Name == "Generators" and v.Name == "Generator" and v.Parent and v then
+if not v:FindFirstChild("Generators_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1,0,1), 15, "Generators_ESP")
+end
+end
+end
+GeneratorsESP = workspace.CurrentRoom.DescendantAdded:Connect(function(v)
+if v.Parent.Name == "Generators" and v.Name == "Generator" and v.Parent and v then
+if not v:FindFirstChild("Generators_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1,0,1), 15, "Generators_ESP")
+end
+end
+end)
+else
+GeneratorsESP:Disconnect()
+LibraryESP:Delete("Generators_ESP")
+end
+end)
+
 ESP:AddToggle("Items ESP", {flag = "IE_flag", default = false}, function(v)
 if v then
-ItemsESP = game:GetService("RunService").RenderStepped:Connect(function()
-if workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
-for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
-if v.Parent.Name = "CurrentRoom" and v.Name == "Items" then
-for _,v2 in ipairs(v:GetChildren()) do
-if v2.Parent.Name == "Items" then
-if not v2:FindFirstChild("Items_ESP") then
-local h = Instance.new("Highlight", v2)
-h.FillTransparency = 1
-h.Name = "Items_ESP"
-h.OutlineColor = Color3.new(0,1)
+for _,v in ipairs(workspace.CurrentRoom:GetDescendants()) do
+if v.Parent.Name == "Items" and v.Parent and v then
+if not v:FindFirstChild("Items_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(0,1), 15, "Items_ESP")
 end
 end
 end
+ItemsESP = workspace.CurrentRoom.DescendantAdded:Connect(function(v)
+if v.Parent.Name == "Items" and v.Parent and v then
+if not v:FindFirstChild("Items_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1,0,1), 15, "Items_ESP")
 end
 end
 end)
 else
 ItemsESP:Disconnect()
+LibraryESP:Delete("Items_ESP")
 end
 end)
-ESP:AddToggle("Generators ESP", {flag = "GE_flag", default = false}, function(v)
-if v then
-GenESP = game:GetService("RunService").RenderStepped:Connect(function()
-if workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
-for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
-if v.Parent.Name = "CurrentRoom" and v.Name == "Generators" then
-for _,v2 in ipairs(v:GetChildren()) do
-if v2.Parent.Name == "Generators" then
-if not v2:FindFirstChild("Gens_ESP") then
-local h = Instance.new("Highlight", v2)
-h.FillTransparency = 1
-h.Name = "Gens_ESP"
-h.OutlineColor = Color3.new(1,0,1)
-end
-end
-end
-end
-end
-end)
-else
-GenESP:Disconnect()
-end
-end)
+
 ESP:AddToggle("Monsters ESP", {flag = "ME_flag", default = false}, function(v)
 if v then
-MonsESP = game:GetService("RunService").RenderStepped:Connect(function()
-if workspace.CurrentRoom:FindFirstChildWhichIsA("Model") then
-for _,v in ipairs(workspace.CurrentRoom:GetChildren()) do
-if v.Parent.Name = "CurrentRoom" and v.Name == "Monsters" then
-for _,v2 in ipairs(v:GetChildren()) do
-if v2.Parent.Name == "Monsters" then
-if not v2:FindFirstChild("Mons_ESP") then
-local h = Instance.new("Highlight", v2)
-h.FillTransparency = 1
-h.Name = "Mons_ESP"
-h.OutlineColor = Color3.new(1)
+for _,v in ipairs(workspace.CurrentRoom:GetDescendants()) do
+if v.Parent.Name == "Monsters" and v.Parent and v then
+if not v:FindFirstChild("Monsters_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1), 15, "Monsters_ESP")
 end
 end
 end
+MonstersESP = workspace.CurrentRoom.DescendantAdded:Connect(function(v)
+if v.Parent.Name == "Monsters" and v.Parent and v then
+if not v:FindFirstChild("Monsters_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1), 15, "Monsters_ESP")
 end
 end
 end)
 else
-MonsESP:Disconnect()
+MonstersESP:Disconnect()
+LibraryESP:Delete("Monsters_ESP")
 end
 end)
+
