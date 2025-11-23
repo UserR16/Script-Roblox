@@ -1,5 +1,70 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/UserR16/DandyWorld/refs/heads/main/Source"))()
+local LibraryESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/RGV-devid/Scripts/refs/heads/main/ESP"))()
 
+StaminaScript = require(game:GetService("ReplicatedStorage").Systems.Character.Game.Sprinting)
+if game:GetService("ReplicatedStorage").Modules.StatusEffects:FindFirstChild("Slowness") then
+game:GetService("ReplicatedStorage").Modules.StatusEffects:FindFirstChild("Slowness"):Destroy()
+end
+if game:GetService("ReplicatedStorage").Modules.StatusEffects:FindFirstChild("Weakness") then
+game:GetService("ReplicatedStorage").Modules.StatusEffects:FindFirstChild("Weakness"):Destroy()
+end
+if game:GetService("ReplicatedStorage").Modules.StatusEffects:FindFirstChild("Blindness") then
+game:GetService("ReplicatedStorage").Modules.StatusEffects:FindFirstChild("Blindness"):Destroy()
+end
+if game:GetService("ReplicatedStorage").Modules.StatusEffects.SurvivorExclusive:FindFirstChild("Subspaced") then
+game:GetService("ReplicatedStorage").Modules.StatusEffects.SurvivorExclusive.Subspaced:Destroy()
+end
+if game:GetService("ReplicatedStorage").Modules.StatusEffects.KillerExclusive:FindFirstChild("Hallucination") then
+game:GetService("ReplicatedStorage").Modules.StatusEffects.KillerExclusive.Hallucination:Destroy()
+end
+if game:GetService("ReplicatedStorage").Modules.StatusEffects.KillerExclusive:FindFirstChild("Glitched") then
+game:GetService("ReplicatedStorage").Modules.StatusEffects.KillerExclusive.Glitched:Destroy()
+end
+game:GetService("RunService").RenderStepped:Connect(function()
+if game.Players.LocalPlayer:WaitForFirst("Character") then
+game.Players.LocalPlayer.Character:FindFirstChild("FOVMultipliers"):FindFirstChild("FOVSetting").Value = 1.5
+end
+game.Lighting.OutdoorAmbient = Color3.fromRGB(255,255,255)
+game.Lighting.Brightness = 1.5
+game.Lighting.GlobalShadows = false
+if not game.Lighting:GetAttribute("FogStart") then game.Lighting:SetAttribute("FogStart", game.Lighting.FogStart) end
+if not game.Lighting:GetAttribute("FogEnd") then game.Lighting:SetAttribute("FogEnd", game.Lighting.FogEnd) end
+game.Lighting.FogStart = true and 0 or game.Lighting:GetAttribute("FogStart")
+game.Lighting.FogEnd = true and math.huge or game.Lighting:GetAttribute("FogEnd")
+local fog = game.Lighting:FindFirstChildOfClass("Atmosphere")
+if fog then
+if not fog:GetAttribute("Density") then fog:SetAttribute("Density", fog.Density) end
+fog.Density = true and 0 or fog:GetAttribute("Density")
+end
+if game.Players.LocalPlayer.PlayerGui:FindFirstChild("TemporaryUI"):FindFirstChild("PlayerInfo"):FindFirstChild("CurrentSurvivors") then
+game.Players.LocalPlayer.PlayerGui:FindFirstChild("TemporaryUI"):FindFirstChild("PlayerInfo"):FindFirstChild("CurrentSurvivors").Visible = not _G.HideBar
+end
+StaminaScript.MaxStamina = 5000
+StaminaScript.StaminaGain = 5000
+StaminaScript.StaminaLoss = 1
+StaminaScript.SprintSpeed = 28.25
+for _,v in ipairs(workspace.Map.Ingame:FindFirstChild("Map"):GetChildren()) do
+if v.Name == "Generator" and v and not v:FindFirstChild("Generators_ESP") then
+LibraryESP:AddESP(v, "Generator\n" .. v.Progress.Value .. "%", Color3.new(0,0,1), 15, "Generators_ESP")
+elseif v.Name == "Generator" and v and v:FindFirstChild("Generators_ESP") then
+v:FindFirstChild("Generators_ESP"):Destroy()
+end
+end
+for _, v in ipairs(workspace.Players.Killers:GetChildren()) do
+if v:IsA("Model") and v.Parent.Name == "Killers" and not v:FindFirstChild("Killers_ESP") then
+LibraryESP:AddESP(v, v.Name .. "\n" .. v.Humanoid.Health .. "/" .. v.Humanoid.MaxHealth, Color3.new(1), 15, "Killers_ESP")
+elseif v:IsA("Model") and v.Parent.Name == "Killers" and v:FindFirstChild("Killers_ESP") then
+v:FindFirstChild("Killers_ESP"):Destroy()
+end
+end
+for _, v in ipairs(workspace.Players.Survivors:GetChildren()) do
+if v:IsA("Model") and v.Parent.Name == "Survivors" and not v:FindFirstChild("Survivors_ESP") then
+LibraryESP:AddESP(v, v.Name .. "\n" .. v.Humanoid.Health .. "/" .. v.Humanoid.MaxHealth, Color3.new(0,1), 15, "Survivors_ESP")
+elseif v:IsA("Model") and v.Parent.Name == "Survivors" and v:FindFirstChild("Survivors_ESP") then
+v:FindFirstChild("Survivors_ESP"):Destroy()
+end
+end
+end)
 task.spawn(function()
 while true do
 if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("PuzzleUI") then
@@ -11,5 +76,23 @@ v.Remotes.RE:FireServer()
 end
 end
 wait()
+end
+end)
+for _,v in ipairs(workspace:GetDescendants()) do
+if v:IsA("Model") and v then
+if v.Name == "BloxyCola" and not v:FindFirstChild("Items_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1,1), 14, "Items_ESP")
+elseif v.Name == "Medkit" and not v:FindFirstChild("Items_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1), 14, "Items_ESP")
+end
+end
+end
+workspace.Map.Ingame.DescendantAdded:Connect(function(v)
+if v:IsA("Model") and v then
+if v.Name == "BloxyCola" and not v:FindFirstChild("Items_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1,1), 14, "Items_ESP")
+elseif v.Name == "Medkit" and not v:FindFirstChild("Items_ESP") then
+LibraryESP:AddESP(v, v.Name, Color3.new(1), 14, "Items_ESP")
+end
 end
 end)
