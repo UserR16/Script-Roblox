@@ -1,0 +1,15 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/UserR16/DandyWorld/refs/heads/main/Source"))()
+
+task.spawn(function()
+while true do
+if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("PuzzleUI") then
+wait(4.5)
+Library:Notify({ text = "Completed A Minigame an Generator" }, function()end})
+for _,v in ipairs(workspace["Map"]["Ingame"]["Map"]:GetChildren()) do
+if v.Name == "Generator" then
+v.Remotes.RE:FireServer()
+end
+end
+wait()
+end
+end)
